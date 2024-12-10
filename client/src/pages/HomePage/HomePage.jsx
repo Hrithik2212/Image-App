@@ -16,7 +16,7 @@ const HomePage = () => {
       Image
       </button>
       <button onClick={()=>setChoice(true)} className={`border-r w-full h-full py-2  ${choice && ("bg-gray-300")}`}>
-        Deatails
+        Details
       </button>
     </div>
     {choice ? (

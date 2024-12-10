@@ -22,13 +22,10 @@ const ProductCard = ({ product}) =>{
               />
               )}
               <div className="flex flex-1 flex-col justify-center">
-                {product?.class_name && (<p className="text-[#111418] text-[0.9rem] font-medium leading-normal">{product?.class_name}</p>)}
-                {product?.entities?.brand_name && (<p className="text-[#637588] text-sm font-normal leading-normal">{product?.entities?.brand_name}</p>)}
-                {product?.entities?.count && (<p className="text-[#637588] text-sm font-normal leading-normal">{product?.entities?.count}</p>)}
-                
-                {product?.brand_name && (<p className="text-[#111418] text-[0.9rem] font-medium leading-normal">{product?.brand_name}</p>)}
+                {product?.product_name && (<p className=" text-[#111418] text-sm font-normal leading-normal">{product?.product_name}</p>)}
+                {product?.brand_name && (<p className="text-[#637588] text-[0.9rem] font-medium leading-normal">{product?.brand_name}</p>)}
                 {product?.category && (<p className="text-[#637588] text-sm font-normal leading-normal">{product?.category}</p>)}
-                {product?.count && (<p className="text-[#637588] text-sm font-normal leading-normal">{product?.count}</p>)}
+                {product?.item_count && (<p className="text-[#637588] text-sm font-normal leading-normal">{product?.item_count}</p>)}
                 
               </div>
     </div>

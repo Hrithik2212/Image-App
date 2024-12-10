@@ -1,12 +1,15 @@
 import ImageView from '@/components/ImageView/ImageView'
 import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
+import data from '../Sample_Response'
 const ImageSection = () => {
+
     const [productData,setProductData]=useState(null)
     const [imagePreviews, setImagePreviews] = useState(null);
     const [loading,setLoading]=useState(false)
     const [show,setShow]=useState(null)
     const [processedImages, setProcessedImages] = useState([]);
+    console.log(productData)
 
   
     const handleImageUpload = async (e) => {
@@ -22,6 +25,7 @@ const ImageSection = () => {
           });
         })
       );
+      setImagePreviews(base64Images); 
     
       sendImagesToBackend(base64Images);
     };
@@ -41,7 +45,7 @@ const ImageSection = () => {
         }
     
         const data = await response.json();
-        setProcessedImages(data.base64);
+        setProcessedImages(data);
         console.log(data.base64)
       } catch (error) {
         console.error("Error uploading images:", error);
@@ -56,97 +60,93 @@ const ImageSection = () => {
   return (
     <div className='flex flex-col gap-10 h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
-        <ImageView  imgSrc={processedImages} loading={loading} handleImgUpload={handleImageUpload}/>
+        <ImageView  imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
       <div className='shadow-lg pb-5 w-[80%] md:max-w-[70vw] mx-auto   h-fit my-5 overflow-y-scroll  bg-white'>
         {productData ? (
             <React.Fragment>
           
         
-                <div className='w-full cursor-pointer border-b' onClick={()=>setShow(!show)} >
-                    <ProductCard  product={productData} />
-                    {show && (
-                         <table className=' mx-auto gap-2 m-5 w-[80%]  '>
-                         <thead>
-                             <tr>
-                                 <th>Info</th>
-                                 <th>Value</th>
-                             </tr>
-                         </thead>
-                         <tbody>
-                             {productData?.track_id &&(
-                               <tr>
-                                         <td>Tracker Id</td>
-                                         <td>{productData?.track_id}</td> 
-                               </tr>
-                             )}
-                             {productData?.product_name &&(
-                                <tr>
-                                 <td>Class Name</td>
-                                 <td>{productData?.product_name}</td> 
-                               </tr>
-                             )}
-                             {productData?.category &&(
-                                <tr>
-                                   <td>Category</td>
-                                   <td>{productData?.category}</td> 
-                                 </tr>
-                             )}
-                             {productData?.brand_name &&(
-                                <tr>
-                                   <td>Brand Name</td>
-                                   <td>{productData?.brand_name}</td> 
-                                 </tr>
-                             )}
-                             {productData?.brand_details &&(
-                                <tr>
-                                   <td>Brand Details</td>
-                                   <td>{productData?.brand_details}</td> 
-                                 </tr>
-                             )}
-                             {productData?.pack_size &&(
-                                 <tr>
-                                           <td>Pack Size</td>
-                                           <td>{productData?.pack_size}</td> 
-                                 </tr>
-                             )}
-                             {productData?.expiry_date &&(
-                                <tr>
-                                         <td>Expiry Date</td>
-                                         <td>{productData?.expiry_date}</td> 
-                               </tr>
-                             )}
-                             {productData?.mrp &&(
-                                <tr>
-                                         <td>MRP</td>
-                                         <td>{productData?.mrp}</td> 
-                               </tr>
-                             )}
-                             {productData?.estimated_shelf_life &&(
-                                <tr>
-                                         <td>Estimated Shelf Life</td>
-                                         <td>{productData?.estimated_shelf_life}</td> 
-                               </tr>
-                             )}
-                             {productData?.state &&(
-                                <tr>
-                                         <td>State</td>
-                                         <td className={`${productData?.state ==="fresh" ?("bg-green-700 fonfont-t-bold"):("bg-red-500 bold")}`}></td> 
-                               </tr>
-                             )}
-
-                             
-                            
-                             
-                             
-                             
-                            
-                             
-                             
-                         </tbody>
-                         
-                     </table>
-                    )}
+                <div className='w-full cursor-pointer border-b' >
+                    {productData.map((product,index)=>(
+                      <div className='w-full cursor-pointer border-b' onClick={()=>setShow(index)} key={index}>
+                      <ProductCard  product={product} />
+                      {show===index && (
+                          <table className=' mx-auto gap-2 m-5 w-[80%]  '>
+                              <thead>
+                                  <tr>
+                                      <th>Info</th>
+                                      <th>Value</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {productData[index]?.brand_name &&(
+                                    <tr>
+                                              <td>Brandname</td>
+                                              <td>{productData[index]?.brand_name}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.brand_details &&(
+                                     <tr>
+                                      <td>Brand Details</td>
+                                      <td>{productData[index]?.brand_details}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.Logo &&(
+                                     <tr>
+                                        <td>Logo</td>
+                                        <td>{productData[index]?.Logo}</td> 
+                                      </tr>
+                                  )}
+                                  {productData[index]?.product_name &&(
+                                     <tr>
+                                        <td>Product Name</td>
+                                        <td>{productData[index]?.product_name}</td> 
+                                      </tr>
+                                  )}
+                                  {productData[index]?.item_count &&(
+                                     <tr>
+                                        <td>Item Count</td>
+                                        <td>{productData[index]?.item_count}</td> 
+                                      </tr>
+                                  )}
+                                  {productData[index]?.pack_size &&(
+                                      <tr>
+                                                <td>Pack Size</td>
+                                                <td>{productData[index]?.pack_size}</td> 
+                                      </tr>
+                                  )}
+                                  {productData[index]?.expiry_date &&(
+                                     <tr>
+                                              <td>Expiry Date</td>
+                                              <td>{productData[index]?.expiry_date}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.mrp &&(
+                                     <tr>
+                                              <td>MRP</td>
+                                              <td>{productData[index]?.mrp}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.category &&(
+                                     <tr>
+                                              <td>Category</td>
+                                              <td>{productData[index]?.category}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.entities?.state &&(
+                                     <tr>
+                                              <td>State</td>
+                                              <td className={`${productData[index]?.entities?.state ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.entities.state}</td> 
+                                    </tr>
+                                  )}
+                              </tbody>
+                              
+                          </table>
+                      )}
+                  </div>
+              ))}
+               
                 </div>
             
             

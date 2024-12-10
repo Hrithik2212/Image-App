@@ -1,9 +1,9 @@
 import ImageView from '@/components/ImageView/ImageView'
 import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
-
+import data from '../Sample_Response'
 const DetailsSection = () => {
-    const [productData,setProductData]=useState(null)
+  const [productData,setProductData]=useState(data.products[0])
     const [imagePreviews, setImagePreviews] = useState(null);
     const [loading,setLoading]=useState(false)
     const [show,setShow]=useState(null)
@@ -23,6 +23,7 @@ const DetailsSection = () => {
           });
         })
       );
+      setImagePreviews(base64Images); 
     
       sendImagesToBackend(base64Images);
     };
@@ -57,7 +58,7 @@ const DetailsSection = () => {
   return (
     <div className='flex flex-col gap-10 h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
-        <ImageView  imgSrc={processedImages} loading={loading} handleImgUpload={handleImageUpload}/>
+        <ImageView  imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
       <div className='shadow-lg pb-5 w-[80%] md:max-w-[70vw] mx-auto   h-fit my-5 overflow-y-scroll  bg-white'>
         {productData ? (
@@ -123,12 +124,6 @@ const DetailsSection = () => {
                                          <td>{productData?.mrp}</td> 
                                </tr>
                              )}
-                             {productData?.estimated_shelf_life &&(
-                                <tr>
-                                         <td>Estimated Shelf Life</td>
-                                         <td>{productData?.estimated_shelf_life}</td> 
-                               </tr>
-                             )}
                              {productData?.state &&(
                                 <tr>
                                          <td>State</td>
@@ -136,14 +131,6 @@ const DetailsSection = () => {
                                </tr>
                              )}
 
-                             
-                            
-                             
-                             
-                             
-                            
-                             
-                             
                          </tbody>
                          
                      </table>
