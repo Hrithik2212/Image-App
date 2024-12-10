@@ -2,3 +2,5 @@ app_env/*
 __pycache__/*
 Data/*
 .env
+venv
+client/node_modules
