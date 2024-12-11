@@ -1,7 +1,7 @@
 import ImageView from '@/components/ImageView/ImageView'
 import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
-import data from '../Sample_Response'
+import BASE_URL from '../../../utils/baseApi'
 const DetailsSection = () => {
   const [productData,setProductData]=useState(null)
     const [imagePreviews, setImagePreviews] = useState(null);
@@ -30,7 +30,7 @@ const DetailsSection = () => {
     const sendImagesToBackend = async (base64Images) => {
       try {
         setLoading(true)
-        const response = await fetch("http://localhost:8000/multi_image_ocr/", {
+        const response = await fetch(BASE_URL+"/multi_image_ocr/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -44,6 +44,7 @@ const DetailsSection = () => {
     
         const data = await response.json();
         setProductData(data);
+        console.log(data)
       } catch (error) {
         console.error("Error uploading images:", error);
       }
@@ -58,7 +59,7 @@ const DetailsSection = () => {
 
     
   return (
-    <div className='flex flex-col  h-fit justify-center items-center'>
+    <div className='flex flex-col gap-8  h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
         <ImageView mutiple={true} imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
@@ -126,18 +127,24 @@ const DetailsSection = () => {
                                          <td>{productData?.mrp}</td> 
                                </tr>
                              )}
-                             {productData[index]?.estimated_shelf_life_days &&(
+                             {productData?.estimated_shelf_life_days &&(
                                      <tr>
-                                              <td>State</td>
-                                              <td className={`${productData[index]?.estimated_shelf_life_days ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.estimated_shelf_life_days}</td> 
+                                              <td>Estimated shelf life days</td>
+                                              <td >{productData[index]?.estimated_shelf_life_days}</td> 
                                     </tr>
                                   )}
-                             {productData?.state &&(
-                                <tr>
-                                         <td>State</td>
-                                         <td className={`${productData?.state ==="fresh" ?("bg-green-700 fonfont-t-bold"):("bg-red-500 bold")}`}></td> 
-                               </tr>
-                             )}
+                                  {productData?.state &&(
+                                     <tr>
+                                              <td>State</td>
+                                              <td className={`${productData[index]?.state ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.state}</td> 
+                                    </tr>
+                                  )}
+                                  {productData?.freshness &&(
+                                     <tr>
+                                              <td>Freshness</td>
+                                              <td>{productData[index]?.freshness}</td> 
+                                    </tr>
+                                  )}
 
                          </tbody>
                          

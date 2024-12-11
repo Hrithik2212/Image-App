@@ -1,6 +1,7 @@
 import ImageView from '@/components/ImageView/ImageView'
-import React, { useEffect, useState } from 'react'
+import React, {  useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
+import BASE_URL from '../../../utils/baseApi'
 const ImageSection = () => {
 
     const [productData,setProductData]=useState(null)
@@ -30,7 +31,7 @@ const ImageSection = () => {
     const sendImagesToBackend = async (base64Images) => {
       try {
         setLoading(true)
-        const response = await fetch("http://localhost:8000/analyze_group/", {
+        const response = await fetch(BASE_URL+"/analyze_group/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -44,6 +45,7 @@ const ImageSection = () => {
     
         const data = await response.json();
         setProductData(data);
+        console.log(data)
       } catch (error) {
         console.error("Error uploading images:", error);
       }
@@ -53,7 +55,7 @@ const ImageSection = () => {
     };
 
   return (
-    <div className='flex flex-col  h-fit justify-center items-center'>
+    <div className='flex gap-8 flex-col  h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
         <ImageView mutiple={false} imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
@@ -62,9 +64,11 @@ const ImageSection = () => {
             <React.Fragment>
           
         
-                <div className='w-full cursor-pointer border-b' >
+                <div className='w-full cursor-pointer border-b p-2' >
+                <h2 className='font-bold text-[1.5rem]'>Count/No.of Unique Products  : {productData.length}</h2>
                     {productData.map((product,index)=>(
                       <div className='w-full cursor-pointer border-b' onClick={()=>setShow(index)} key={index}>
+                      
                       <ProductCard  product={product} />
                       {show===index && (
                           <table className=' mx-auto gap-2 m-5 w-[80%]  '>
@@ -131,14 +135,20 @@ const ImageSection = () => {
                                   )}
                                   {productData[index]?.estimated_shelf_life_days &&(
                                      <tr>
-                                              <td>State</td>
-                                              <td className={`${productData[index]?.estimated_shelf_life_days ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.estimated_shelf_life_days}</td> 
+                                              <td>Estimated shelf life days</td>
+                                              <td >{productData[index]?.estimated_shelf_life_days}</td> 
                                     </tr>
                                   )}
                                   {productData[index]?.state &&(
                                      <tr>
                                               <td>State</td>
                                               <td className={`${productData[index]?.state ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.state}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.freshness &&(
+                                     <tr>
+                                              <td>Freshness</td>
+                                              <td>{productData[index]?.freshness}</td> 
                                     </tr>
                                   )}
                               </tbody>
