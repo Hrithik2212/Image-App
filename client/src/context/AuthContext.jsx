@@ -3,24 +3,7 @@ import {Link, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import { jwtDecode } from "jwt-decode";
 import { IoIosLogOut } from "react-icons/io";
 import BASE_URL from '@/utils/baseApi';
-const NavBar=()=>{
-    const {logoutUser,user}=useContext(AuthContext)
-    return(
-      <nav className='w-full h-fit shadow-lg text-[var(--text-primary-color)] py-5 px-10 flex justify-between nav-shadow '>
-        
-          <section style={{"fontSize":"var(--secondary-font-size)"}} className='font-[var(--secondary-font-weight)] '>
-              <Link to="/" className='flex gap-3 justify-center'>
-                <h1 className=''>FlipKart Grid</h1>
-              </Link>
-          </section>
-          <section className='relative'>
-            {user && (<button onClick={logoutUser} className='text-black'><IoIosLogOut size={30}/></button>)}
-             
-          </section>
-        
-      </nav>
-    )
-}
+
 
 
 const AuthContext = createContext()

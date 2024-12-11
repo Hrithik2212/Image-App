@@ -58,7 +58,7 @@ const DetailsSection = () => {
   return (
     <div className='flex flex-col gap-10 h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
-        <ImageView  imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
+        <ImageView mutiple={true} imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
       <div className='shadow-lg pb-5 w-[80%] md:max-w-[70vw] mx-auto   h-fit my-5 overflow-y-scroll  bg-white'>
         {productData ? (
