@@ -1,54 +1,65 @@
-from groq import Groq
-import json
-import utils 
-import requests
-from PIL import Image 
-from freshness_classifier import classify_image , device
-import io
+from openai import OpenAI
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 import os 
 import base64
+from freshness_classifier import classify_image , device
+from typing import Optional , Dict , Any 
+from PIL import Image 
+import io 
+
+# Load environment variables
+load_dotenv()
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Define the ProductAnalysis model
+class ProductAnalysis(BaseModel):
+    brand_name: Optional[str] = Field(None, description="Name of the brand")
+    brand_details: Optional[str] = Field(None, description="Details about the brand, such as logo or tagline")
+    pack_size: Optional[str] = Field(None, description="Size of the product pack")
+    expiry_date: Optional[str] = Field(None, description="Expiry date of the product")
+    mrp: Optional[str] = Field(None, description="Maximum Retail Price of the product")
+    product_name: Optional[str] = Field(None, description="Name of the product")
+    item_count: Optional[int] = Field(None, description="Number of items in the image")
+    category: Optional[str] = Field(None, description="Category of the product, e.g., personal care, household items")
+
+class FreshnessAnalysis(BaseModel):
+    product_name: Optional[str] = Field(
+        None, 
+        description="Name of the product (e.g., apple, banana, bread, etc.)"
+    )
+    item_count: Optional[int] = Field(
+        None, 
+        description="Count/quantity of items present in the image"
+    )
+    category: Optional[str] = Field(
+        None, 
+        description="Category of the product (e.g., fruit, vegetable, bread)"
+    )
+    estimated_shelf_life_days: Optional[int] = Field(
+        None, 
+        description="Estimated shelf life in terms of days"
+    )
 
 
-def analyze_image(base64_image_url , client):
-    """
-    Analyze the image using the Groq client to extract product entities.
-
-    Args:
-        base64_image_url (str): Base64 URL string of the image
-
-    Returns:
-        dict: Extracted entities from the image
-    """
-    # Initialize the Groq client
-
-    # Define the prompt
+def perform_ocr_extraction(base64_image: str, openai_client: OpenAI) -> Dict:
     prompt = """
-    Analyze the image of a grocery product and extract the following information: 
-    - Brand name
-    - Brand details (e.g., logo/tagline)
-    - Pack size
-    - Expiry date
-    - MRP (Maximum Retail Price)
-    - Product name
-    - Count/quantity of items - count of the product present in the image 
-    - Category of the product (e.g., personal care, household items, health supplements, etc.)
+Analyze the image of a grocery product and extract the following information: 
+- Brand name
+- Brand details (e.g., logo/tagline)
+- Pack size
+- Expiry date
+- MRP (Maximum Retail Price)
+- Product name
+- Count/quantity of items - count of the product present in the image 
+- Category of the product (e.g., personal care, household items, health supplements, etc.)
+"""
 
-    Image description: The image is a low-resolution and blurry photo of a grocery product cropped from a conveyor belt.
-
-    Image quality: The image is expected to have varying levels of blur and low resolution, with potential obstacles such as glare, shadows, or other environmental factors.
-
-    Output format: JSON
-
-    Handling edge cases:
-    - If the image is blur, try to identify at least the brand name, do not leave the brand name N/A as it leads to unpleasant situations.
-    - If the text is missing, please include 'N/A' in the corresponding field.
-    - If no visible text or relevant information is present in the image, please return an empty JSON object or a message indicating 'N/A'.
-    """
-
-    # Prepare the API request
-    completion = client.chat.completions.create(
-        model="llama-3.2-90b-vision-preview",
-        messages=[
+    try:
+        # Prepare the messages with text and image
+        messages = [
             {
                 "role": "user",
                 "content": [
@@ -59,142 +70,158 @@ def analyze_image(base64_image_url , client):
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": base64_image_url
+                            "url": f"{base64_image}" 
                         }
                     }
                 ]
             }
-        ],
-        temperature=0,
-        max_tokens=1024,
-        top_p=1,
-        stream=False,
-        stop=None,
-        response_format={"type": "json_object"}  # Ensure response is in JSON format
-    )
+        ]
 
-    # Parse the structured JSON response
-    return json.loads(completion.choices[0].message.content)
+        # Make the API call
+        completion = openai_client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=messages,
+            response_format=ProductAnalysis,
+            temperature=0
+        )
+
+        # Extract the parsed message
+        result = completion.choices[0].message.parsed
+
+        return result.model_dump()
+
+    except Exception as e:
+        print(f"An error occurred during OCR extraction: {e}")
+        return None
 
 
-def analyze_freshness(image , client):
-    """
-    Analyze the image using the Groq API to extract product information.
-
-    Parameters:
-    - image (PIL.Image.Image): A PIL Image object.
-
-    Returns:
-    - dict: Dictionary containing the analysis results.
-    """
-    # Import the Groq client
-    from groq import Groq  # Ensure you have the groq package installed
-
-    # Ensure the API key is set
-    if "GROQ_API_KEY" not in os.environ:
-        raise Exception("Please set the GROQ_API_KEY environment variable.")
-
-    # Initialize the Groq client
-    fruit_prompt = """
+def analyze_freshness(base64_image: str, openai_client: OpenAI) -> Dict:
+    prompt = """
 Analyze the image of a grocery product and extract the following information:
 - Name of the product (e.g., apple, banana, bread, etc.)
-- Count/quantity of items - count of the product present in the image
+- Count/quantity of items - count of the identified product present in the image (eg - 1,2 ...)
 - Category of the product (e.g., fruit, vegetable, bread)
 - Estimated shelf life (in terms of days)
 
-Image description: The image is a low-resolution and blurry photo of a grocery product cropped from a conveyor belt.
-
-Image quality: The image is expected to have varying levels of blur and low resolution, with potential obstacles such as glare, shadows, or other environmental factors.
-
-Output format: JSON
-
-Handling edge cases:
-- If the product is a fruit or vegetable, assess its freshness and estimate its shelf life based on visual cues.
+Edge Case 
+If in case the fruit seems spoiled then the estimated shelf life is 0
 """
-
-    # Prepare the API request
-    completion = client.chat.completions.create(
-        model="llama-3.2-90b-vision-preview",
-        messages=[
+    try:
+        # Prepare the messages with text and image
+        messages = [
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": fruit_prompt
+                        "text": prompt
                     },
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": utils.image_to_base64_url_from_image(image)
+                            "url": f"data:image/jpeg;base64,{base64_image}" 
                         }
                     }
                 ]
             }
-        ],
-        temperature=0,
-        max_tokens=1024,
-        top_p=1,
-        stream=False,
-        stop=None,
-        response_format={"type": "json_object"}  # Ensure response is in JSON format
-    )
+        ]
 
-    # Parse the structured JSON response
-    try:
-        response_content = completion.choices[0].message.content
-        return json.loads(response_content)
-    except json.JSONDecodeError:
-        # Handle cases where the response is not valid JSON
-        return {"error": "Invalid JSON response from API."}
+        # Make the API call
+        completion = openai_client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=messages,
+            response_format=FreshnessAnalysis,
+            temperature=0
+        )
+        result = completion.choices[0].message.parsed
+        print(result)
+        return result.model_dump()
+
     except Exception as e:
-        # Handle any other exceptions
-        return {"error": str(e)}
+        print(f"An error occurred during OCR extraction: {e}")
+        return None
 
 
-
-def perishable_analyze(image_url, client , classifier_model,threshold=0.9 ):
-    """
-    Process the image from the given URL and return the analysis results.
-
-    Parameters:
-    - image_url (str): URL of the image to process (HTTP/HTTPS or data URL).
-    - threshold (float): Threshold for classifying as 'rotten'. Default is 0.7.
-
-    Returns:
-    - dict: Dictionary containing the analysis results.
-    """
-    # Step 1: Load the image
+def perishable_analyze(
+    base64_image: str,
+    client: Any,
+    classifier_model: Any,
+    device: Optional[Any] = None,
+    threshold: float = 0.9
+) -> Dict[str, Any]:
+    # Step 1: Decode the Base64 image
     try:
-        if image_url.startswith('data:'):
-            # It's a data URL; decode it
-            header, encoded = image_url.split(',', 1)
-            image_data = base64.b64decode(encoded)
-            image = Image.open(io.BytesIO(image_data)).convert('RGB')
+        # If the Base64 string includes the data URL prefix, remove it
+        if base64_image.startswith('data:'):
+            header, encoded = base64_image.split(',', 1)
         else:
-            # It's an HTTP/HTTPS URL; download the image
-            response = requests.get(image_url)
-            response.raise_for_status()
-            image = Image.open(io.BytesIO(response.content)).convert('RGB')
+            encoded = base64_image
+
+        image_data = base64.b64decode(encoded)
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
     except Exception as e:
-        return {"error": f"Failed to download or open image: {str(e)}"}
+        return {"error": f"Failed to decode or open image: {str(e)}"}
 
     # Step 2: Classify the image
-    predicted_label, probability = classify_image(image, classifier_model, device, threshold=threshold)
+    try:
+        predicted_label, probability = classify_image(
+            image,
+            classifier_model,
+            device=device,
+            threshold=threshold
+        )
+    except Exception as e:
+        return {"error": f"Image classification failed: {str(e)}"}
 
-    # Step 3: Analyze the image using Groq API
-    analysis_result = analyze_freshness(image , client)
-    if 'error' in analysis_result:
-        return analysis_result  # Return the error
+    # Step 3: Analyze the image using the freshness analysis API
+    try:
+        analysis_result = analyze_freshness(encoded , client)
+        if 'error' in analysis_result:
+            return analysis_result  # Return the error from analyze_freshness
+    except Exception as e:
+        return {"error": f"Freshness analysis failed: {str(e)}"}
 
     # Step 4: Combine the results
-    result = {
-        "product_name": analysis_result.get("product_name", None),
-        "count": analysis_result.get("count", None),
-        "category": analysis_result.get("category", None),
-        "estimated_shelf_life": analysis_result.get("estimated_shelf_life", None),
-        "state": predicted_label,  # classifier_model prediction ('fresh' or 'rotten')
-        "freshness": (1-probability)   # classifier_model probability
-    }
-    print(result)
-    return result
+    try:
+        result = {
+            "image" : encoded , 
+            "product_name": analysis_result.get("product_name", None),
+            "count": analysis_result.get("item_count", None),
+            "category": analysis_result.get("category", None),
+            "estimated_shelf_life_days": analysis_result.get("estimated_shelf_life_days", None),
+            "state": predicted_label,             # Classifier model prediction ('fresh' or 'rotten')
+            "freshness": (1 - probability)       # Classifier model probability
+        }
+        return result
+    except Exception as e:
+        return {"error": f"Failed to combine results: {str(e)}"}
+
+
+# Example usage
+if __name__ == "__main__":
+    def encode_image(image_path: str) -> str:
+        """Encode an image file to a Base64 string."""
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    # # Path to your image
+    # image_path = "Data/1.jpg"
+
+    # # Encode the image to Base64
+    # base64_image = encode_image(image_path)
+
+    # # Perform OCR extraction
+    # product_info = perform_ocr_extraction(base64_image, client)
+
+    # # Print the extracted information
+    # if product_info:
+    #     print(product_info.model_dump())
+    # else:
+    #     print("No information extracted.")
+    from freshness_classifier import get_classifier_model
+    model = get_classifier_model() 
+
+    image_path ="Data/rotten-apple.webp"
+    base64_image = encode_image(image_path)
+
+    print(perishable_analyze(base64_image , client , model , device))
