@@ -175,7 +175,7 @@ async def perishable_analyze(
 
     # Step 3: Analyze the image using the freshness analysis API
     try:
-        analysis_result = analyze_freshness(encoded , client)
+        analysis_result =await analyze_freshness(encoded , client)
         if 'error' in analysis_result:
             return analysis_result  # Return the error from analyze_freshness
     except Exception as e:

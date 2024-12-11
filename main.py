@@ -212,6 +212,12 @@ async def process_detections_with_clients(
                         device=freshness_classifier.device,
                         threshold=0.9
                     )
+                    # print(analysis.keys())
+                    if not analysis['product_name'] : 
+                        analysis = analysis = await asyncio.to_thread(
+                        entity_extraction.perform_ocr_extraction,
+                        base64_image=base64_url,
+                        openai_client=client)
                 else:
                     # Run perishable_analyze in a separate thread if it's synchronous
                     analysis = await asyncio.to_thread(
@@ -226,7 +232,7 @@ async def process_detections_with_clients(
                 # Call perform_ocr_extraction
                 if asyncio.iscoroutinefunction(entity_extraction.perform_ocr_extraction):
                     analysis = await entity_extraction.perform_ocr_extraction(
-                        base64_image_url=base64_url,
+                        base64_image=base64_url,
                         client=client
                     )
                 else:
@@ -240,7 +246,7 @@ async def process_detections_with_clients(
                 # Handle unexpected class_id values if necessary
                 raise ValueError(f"Unsupported class_id: {class_id}")
 
-            print(f"Analysis for {filename}: {analysis}")
+#            print(f"Analysis for {filename}: {analysis}")
 
             # Append the result including the Base64-encoded image
             analysis_results.append({
