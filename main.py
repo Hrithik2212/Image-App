@@ -73,7 +73,7 @@ async def analyze_group(b64_image:SingleImage):
             max_det=20 ,  # Maximum number of detections per image
             agnostic_nms=True
         )
-        print(f"Number of detections: {len(res[0])}")
+        logging.debug(f"Number of detections: {len(res[0])}")
         
         # Extract detections using your custom method
         detections = []
@@ -92,7 +92,7 @@ async def analyze_group(b64_image:SingleImage):
                 "class_id": class_id,
                 "class_name": class_name
             })
-        print(f"Detections: {detections}")
+        logging.debug(f"Detections: {detections}")
     except Exception as e:
         logging.error(f"Object Detection Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Object detection failed: {e}")
@@ -185,9 +185,9 @@ async def process_detections_with_clients(
 
             # Save cropped image to Data/ directory with sequential filename
             filename = f"{index}.jpg"
-            save_path = os.path.join(DATA_DIR, filename)
-            cropped_image.save(save_path, format="JPEG")
-            print(f"Saved cropped image to {save_path}")
+            # save_path = os.path.join(DATA_DIR, filename)
+            # cropped_image.save(save_path, format="JPEG")
+            # logging.debug(f"Saved cropped image to {save_path}")
 
             # Correctly encode the cropped image to bytes
             buffered = io.BytesIO()
@@ -212,7 +212,7 @@ async def process_detections_with_clients(
                         device=freshness_classifier.device,
                         threshold=0.9
                     )
-                    # print(analysis.keys())
+                    # logging.debug(analysis.keys())
                     if not analysis['product_name'] : 
                         analysis = analysis = await asyncio.to_thread(
                         entity_extraction.perform_ocr_extraction,
@@ -252,7 +252,7 @@ async def process_detections_with_clients(
                 # Handle unexpected class_id values if necessary
                 raise ValueError(f"Unsupported class_id: {class_id}")
 
-#            print(f"Analysis for {filename}: {analysis}")
+#            logging.debug(f"Analysis for {filename}: {analysis}")
 
             # Append the result including the Base64-encoded image
             analysis_results.append({
