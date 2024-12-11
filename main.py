@@ -119,34 +119,34 @@ async def analyze_group(b64_image:SingleImage):
 
 ## NOTE : uncomment the till base64 part and comment till finallty block
 @app.post("/multi_image_ocr/", summary="Upload images and process them")
-# async def upload_image(data: ImageData):
-#     base64_images = []
-#     for index, image_base64 in enumerate(data.images):
-#         base64_images.append(image_base64)
-async def upload_images(files: List[UploadFile]= File(...)): #->Dict :
+async def upload_image(data: ImageData):
     base64_images = []
-    for file in files:
-        # Validate the file type (optional but recommended)
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Invalid file type: {file.filename}. Only image files are allowed."
-            )
+    for index, image_base64 in enumerate(data.images):
+        base64_images.append(image_base64)
+# async def upload_images(files: List[UploadFile]= File(...)): #->Dict :
+#     base64_images = []
+#     for file in files:
+#         # Validate the file type (optional but recommended)
+#         if not file.content_type.startswith("image/"):
+#             raise HTTPException(
+#                 status_code=400, 
+#                 detail=f"Invalid file type: {file.filename}. Only image files are allowed."
+#             )
         
-        try:
-            # Read the file content
-            contents = await file.read()
-            image = Image.open(io.BytesIO(contents))
-            image.verify()  # This will raise an exception if the image is not valid
-            base64_str = base64.b64encode(contents).decode('utf-8')
-            base64_images.append(base64_str)
-        except Exception as e:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Failed to process file {file.filename}: {str(e)}"
-            )
-        finally:
-            await file.close()
+#         try:
+#             # Read the file content
+#             contents = await file.read()
+#             image = Image.open(io.BytesIO(contents))
+#             image.verify()  # This will raise an exception if the image is not valid
+#             base64_str = base64.b64encode(contents).decode('utf-8')
+#             base64_images.append(base64_str)
+#         except Exception as e:
+#             raise HTTPException(
+#                 status_code=400, 
+#                 detail=f"Failed to process file {file.filename}: {str(e)}"
+#             )
+#         finally:
+#             await file.close()
     return entity_extraction.ocr_mulitple_images(base64_images , OpenAI(api_key=os.getenv("OPENAI_API_KEY")))
     
 

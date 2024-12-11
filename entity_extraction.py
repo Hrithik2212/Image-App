@@ -184,7 +184,7 @@ def perishable_analyze(
     # Step 4: Combine the results
     try:
         result = {
-            "image" : encoded , 
+            "b64_image" : encoded , 
             "product_name": analysis_result.get("product_name", None),
             "count": analysis_result.get("item_count", None),
             "category": analysis_result.get("category", None),
@@ -245,7 +245,7 @@ Analyze the images of the given grocery product and extract the following inform
         content = [
             {"type": "text","text": prompt}
             ]
-        content.extend([{"type": "image_url" , "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}} for b64_image in b64_images])
+        content.extend([{"type": "image_url" , "image_url": {"url": f"{b64_image}"}} for b64_image in b64_images])
         messages = [
             {
                 "role": "user",

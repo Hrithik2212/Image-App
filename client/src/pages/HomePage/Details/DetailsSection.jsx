@@ -30,7 +30,7 @@ const DetailsSection = () => {
     
     const sendImagesToBackend = async (base64Images) => {
       try {
-        const response = await fetch("http://localhost:8000/upload-image/", {
+        const response = await fetch("http://localhost:8000/multi_image_ocr/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
