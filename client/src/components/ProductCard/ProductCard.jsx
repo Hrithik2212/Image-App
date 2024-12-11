@@ -6,7 +6,7 @@ const ProductCard = ({ product}) =>{
 
   useEffect(()=>{
 
-    setImageSrc(product?.image_base64_url);
+    setImageSrc(product?.base64_image);
 
   },[product])
 

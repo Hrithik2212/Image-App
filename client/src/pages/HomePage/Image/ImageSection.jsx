@@ -1,15 +1,13 @@
 import ImageView from '@/components/ImageView/ImageView'
 import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
-import data from '../Sample_Response'
+import data from '../analyze_group_sample_response.json'
 const ImageSection = () => {
 
-    const [productData,setProductData]=useState(null)
+    const [productData,setProductData]=useState(data)
     const [imagePreviews, setImagePreviews] = useState(null);
     const [loading,setLoading]=useState(false)
     const [show,setShow]=useState(null)
-    const [processedImages, setProcessedImages] = useState([]);
-    console.log(productData)
 
   
     const handleImageUpload = async (e) => {
@@ -45,8 +43,7 @@ const ImageSection = () => {
         }
     
         const data = await response.json();
-        setProcessedImages(data);
-        console.log(data.base64)
+        setProductData(data);
       } catch (error) {
         console.error("Error uploading images:", error);
       }
