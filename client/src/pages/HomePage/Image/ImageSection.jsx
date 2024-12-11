@@ -1,10 +1,9 @@
 import ImageView from '@/components/ImageView/ImageView'
 import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
-import data from '../analyze_group_sample_response.json'
 const ImageSection = () => {
 
-    const [productData,setProductData]=useState(data)
+    const [productData,setProductData]=useState(null)
     const [imagePreviews, setImagePreviews] = useState(null);
     const [loading,setLoading]=useState(false)
     const [show,setShow]=useState(null)
@@ -30,6 +29,7 @@ const ImageSection = () => {
     
     const sendImagesToBackend = async (base64Images) => {
       try {
+        setLoading(true)
         const response = await fetch("http://localhost:8000/analyze_group/", {
           method: "POST",
           headers: {
@@ -46,6 +46,9 @@ const ImageSection = () => {
         setProductData(data);
       } catch (error) {
         console.error("Error uploading images:", error);
+      }
+      finally{
+        setLoading(false)
       }
     };
 
@@ -126,10 +129,16 @@ const ImageSection = () => {
                                               <td>{productData[index]?.category}</td> 
                                     </tr>
                                   )}
-                                  {productData[index]?.entities?.state &&(
+                                  {productData[index]?.estimated_shelf_life_days &&(
                                      <tr>
                                               <td>State</td>
-                                              <td className={`${productData[index]?.entities?.state ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.entities.state}</td> 
+                                              <td className={`${productData[index]?.estimated_shelf_life_days ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.estimated_shelf_life_days}</td> 
+                                    </tr>
+                                  )}
+                                  {productData[index]?.state &&(
+                                     <tr>
+                                              <td>State</td>
+                                              <td className={`${productData[index]?.state ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.state}</td> 
                                     </tr>
                                   )}
                               </tbody>

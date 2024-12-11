@@ -3,11 +3,10 @@ import React, { useEffect, useState } from 'react'
 import ProductCard from '@/components/ProductCard/ProductCard';
 import data from '../Sample_Response'
 const DetailsSection = () => {
-  const [productData,setProductData]=useState(data.products[0])
+  const [productData,setProductData]=useState(null)
     const [imagePreviews, setImagePreviews] = useState(null);
     const [loading,setLoading]=useState(false)
     const [show,setShow]=useState(null)
-    const [processedImages, setProcessedImages] = useState([]);
 
   
     const handleImageUpload = async (e) => {
@@ -30,6 +29,7 @@ const DetailsSection = () => {
     
     const sendImagesToBackend = async (base64Images) => {
       try {
+        setLoading(true)
         const response = await fetch("http://localhost:8000/multi_image_ocr/", {
           method: "POST",
           headers: {
@@ -43,10 +43,12 @@ const DetailsSection = () => {
         }
     
         const data = await response.json();
-        setProcessedImages(data.base64);
-        console.log(data.base64)
+        setProductData(data);
       } catch (error) {
         console.error("Error uploading images:", error);
+      }
+      finally{
+        setLoading(false)
       }
     };
     

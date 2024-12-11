@@ -37,8 +37,6 @@ const HomePage = () => {
           ):(
             <div className='h-full w-full'>
               <ImageSection/> 
-              
-              
             </div>
           )}
           
