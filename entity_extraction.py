@@ -225,3 +225,47 @@ if __name__ == "__main__":
     base64_image = encode_image(image_path)
 
     print(perishable_analyze(base64_image , client , model , device))
+
+def ocr_mulitple_images(b64_images , openai_client)-> Dict:
+    prompt = """
+Following are the images of a single grocery product from different angles 
+Analyze the images of the given grocery product and extract the following information: 
+- Brand name
+- Brand details (e.g., logo/tagline)
+- Pack size
+- Expiry date
+- MRP (Maximum Retail Price)
+- Product name
+- Count/quantity of items - count of the product present in the image 
+- Category of the product (e.g., personal care, household items, health supplements, etc.)
+"""
+
+    try:
+        # Prepare the messages with text and image
+        content = [
+            {"type": "text","text": prompt}
+            ]
+        content.extend([{"type": "image_url" , "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}} for b64_image in b64_images])
+        messages = [
+            {
+                "role": "user",
+                "content": content
+            }
+        ]
+
+        # Make the API call
+        completion = openai_client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=messages,
+            response_format=ProductAnalysis,
+            temperature=0
+        )
+
+        # Extract the parsed message
+        result = completion.choices[0].message.parsed
+
+        return result.model_dump()
+
+    except Exception as e:
+        print(f"An error occurred during OCR extraction: {e}")
+        return None

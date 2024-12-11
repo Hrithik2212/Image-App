@@ -36,30 +36,32 @@ app.add_middleware(
 )
 classifier_model = freshness_classifier.get_classifier_model()
 obj_det_model = YOLO("ml_models/yolov11m_30k_10ep.pt")  # Ensure correct path and model
+DATA_DIR = "Data"
+
 
 # Set timezone
 kolkata_tz = pytz.timezone('Asia/Kolkata')
 
 ## NOTE : uncomment first three lines and commnet until the first exception block 
 @app.post("/analyze_group/")
-# async def analyze_group(b64_image:SingleImage):
-#     image_data = base64.b64decode(b64_image)
-#     pil_image = Image.open(io.BytesIO(image_data)).convert('RGB')
+async def analyze_group(b64_image:SingleImage):
+    image_data = base64.b64decode(b64_image.image)
+    pil_image = Image.open(io.BytesIO(image_data)).convert('RGB')
 
-async def analyze_image(images: List[UploadFile] = File(...)):
-    if not images:
-        raise HTTPException(status_code=400, detail="No image uploaded")
+# async def analyze_image(images: List[UploadFile] = File(...)):
+#     if not images:
+#         raise HTTPException(status_code=400, detail="No image uploaded")
     
-    image = images[0]  # Process the first image in the list
+#     image = images[0]  # Process the first image in the list
 
-    try:
-        # Read the image bytes
-        image_bytes = await image.read()
+#     try:
+#         # Read the image bytes
+#         image_bytes = await image.read()
         
-        # Open the image using PIL for processing
-        pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read image file: {e}")
+#         # Open the image using PIL for processing
+#         pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=f"Failed to read image file: {e}")
 
 
     try:
@@ -114,24 +116,38 @@ async def analyze_image(images: List[UploadFile] = File(...)):
 
 
 
-
-@app.post("/upload-image/", summary="Upload images and process them")
-async def upload_image(data: ImageData):
+## NOTE : uncomment the till base64 part and comment till finallty block
+@app.post("/multi_image_ocr/", summary="Upload images and process them")
+# async def upload_image(data: ImageData):
+#     base64_images = []
+#     for index, image_base64 in enumerate(data.images):
+#         base64_images.append(image_base64)
+async def upload_images(files: List[UploadFile]= File(...)): #->Dict :
     base64_images = []
-    for index, image_base64 in enumerate(data.images):
+    for file in files:
+        # Validate the file type (optional but recommended)
+        if not file.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid file type: {file.filename}. Only image files are allowed."
+            )
+        
         try:
-            header, encoded = image_base64.split(",", 1)
-            image_data = base64.b64decode(encoded)
-            base64_images.append(image_base64)
+            # Read the file content
+            contents = await file.read()
+            image = Image.open(io.BytesIO(contents))
+            image.verify()  # This will raise an exception if the image is not valid
+            base64_str = base64.b64encode(contents).decode('utf-8')
+            base64_images.append(base64_str)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
-
-    return {"base64": base64_images}
-
-
-
-# # Ensure the Data/ directory exists
-DATA_DIR = "Data"
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Failed to process file {file.filename}: {str(e)}"
+            )
+        finally:
+            await file.close()
+    return entity_extraction.ocr_mulitple_images(base64_images , OpenAI(api_key=os.getenv("OPENAI_API_KEY")))
+    
 
 
 async def process_detections_with_clients(

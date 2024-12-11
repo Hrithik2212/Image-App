@@ -32,7 +32,7 @@ const ImageSection = () => {
     
     const sendImagesToBackend = async (base64Images) => {
       try {
-        const response = await fetch("http://localhost:8000/upload-image/", {
+        const response = await fetch("http://localhost:8000/analyze_group/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
