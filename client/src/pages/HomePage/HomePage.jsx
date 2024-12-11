@@ -22,12 +22,12 @@ const HomePage = () => {
      
     
         <div className="min-h-full h-full  flex flex-col mt-5 ">
-          <div className='w-[150px] flex justify-center  mx-auto mb-5 shadow-lg  bg-white '>
+          <div className='w-[650px] flex justify-center  mx-auto mb-5 shadow-lg  bg-white '>
             <button onClick={()=>setChoice(false)} className={`border-r w-full h-full py-2  ${!choice && ("bg-gray-300")}`}>
-            Image
+            Detect count and extract brand names
             </button>
             <button onClick={()=>setChoice(true)} className={`border-r w-full h-full py-2  ${choice && ("bg-gray-300")}`}>
-              Details
+              Extract OCR Information
             </button>
           </div>
           {choice ? (

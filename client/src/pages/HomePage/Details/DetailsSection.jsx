@@ -58,7 +58,7 @@ const DetailsSection = () => {
 
     
   return (
-    <div className='flex flex-col gap-10 h-fit justify-center items-center'>
+    <div className='flex flex-col  h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
         <ImageView mutiple={true} imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
@@ -126,6 +126,12 @@ const DetailsSection = () => {
                                          <td>{productData?.mrp}</td> 
                                </tr>
                              )}
+                             {productData[index]?.estimated_shelf_life_days &&(
+                                     <tr>
+                                              <td>State</td>
+                                              <td className={`${productData[index]?.estimated_shelf_life_days ==="fresh" ?("text-green-500"):("text-red-500")}`}>{productData[index]?.estimated_shelf_life_days}</td> 
+                                    </tr>
+                                  )}
                              {productData?.state &&(
                                 <tr>
                                          <td>State</td>
@@ -142,11 +148,16 @@ const DetailsSection = () => {
             
         </React.Fragment>
         ):(
+          loading ? (
+            <div className='mx-auto mt-5 w-[25px] h-[25px] border-l-[2px] rounded-[20px] animate-spin  border-t-[2px] border-black'/>
+            
+          ):(
             <div className='w-full'>
                 <h4 className='w-full h-full flex justify-center items-center px-5 py-2 text-[20px] text-center'>Welcome<br></br> to Team Sentinels at Flipkart Grid Hackathon!</h4>
             </div>
+          )
 
-        )}
+      )}
       </div>
 
     </div>

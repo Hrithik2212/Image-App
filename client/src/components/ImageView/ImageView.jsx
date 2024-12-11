@@ -42,8 +42,8 @@ const ImageView = ({ imgSrc, loading, handleImgUpload ,mutiple}) => {
               <div className='w-[40px] cursor-wait h-[40px] border-white opacity-1 z-10 border-l-0 border-t-0 animate-spin border-2 rounded-full bg-transparent' />
             </div>
           ) : (
-            <div className='absolute w-full h-full text-white flex justify-center items-center'>
-              <h4 className='w-full text-center mx-auto font-bold'>Upload Image</h4>
+            <div className='absolute w-full h-full  flex justify-center items-center'>
+              <h4 className=' text-center mx-auto bg-white w-fit p-2 shadow-lg font-[500] rounded-sm'>Upload Image</h4>
               <input className='absolute cursor-pointer w-full h-full opacity-0' type="file" accept="image/*" multiple={mutiple}  onChange={handleImgUpload} />
             </div>
           )}

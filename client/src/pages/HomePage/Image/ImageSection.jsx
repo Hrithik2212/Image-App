@@ -53,7 +53,7 @@ const ImageSection = () => {
     };
 
   return (
-    <div className='flex flex-col gap-10 h-fit justify-center items-center'>
+    <div className='flex flex-col  h-fit justify-center items-center'>
       <div className='w-[80%] max-h-[500px] block max-w-[800px]  '>
         <ImageView mutiple={false} imgSrc={imagePreviews} loading={loading} handleImgUpload={handleImageUpload}/>
       </div>
@@ -153,9 +153,14 @@ const ImageSection = () => {
             
         </React.Fragment>
         ):(
-            <div className='w-full'>
-                <h4 className='w-full h-full flex justify-center items-center px-5 py-2 text-[20px] text-center'>Welcome<br></br> to Team Sentinels at Flipkart Grid Hackathon!</h4>
-            </div>
+            loading ? (
+              <div className='mx-auto mt-5 w-[25px] h-[25px] border-l-[2px] rounded-[20px] animate-spin  border-t-[2px] border-black'/>
+              
+            ):(
+              <div className='w-full'>
+                  <h4 className='w-full h-full flex justify-center items-center px-5 py-2 text-[20px] text-center'>Welcome<br></br> to Team Sentinels at Flipkart Grid Hackathon!</h4>
+              </div>
+            )
 
         )}
       </div>
