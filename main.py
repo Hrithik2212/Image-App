@@ -218,6 +218,7 @@ async def process_detections_with_clients(
                         entity_extraction.perform_ocr_extraction,
                         base64_image=base64_url,
                         openai_client=client)
+
                 else:
                     # Run perishable_analyze in a separate thread if it's synchronous
                     analysis = await asyncio.to_thread(
@@ -228,6 +229,11 @@ async def process_detections_with_clients(
                         device=freshness_classifier.device,
                         threshold=0.9
                     )
+                    if not analysis['product_name'] : 
+                        analysis  = await asyncio.to_thread(
+                        entity_extraction.perform_ocr_extraction,
+                        base64_image=base64_url,
+                        openai_client=client)
             elif class_id == 1:
                 # Call perform_ocr_extraction
                 if asyncio.iscoroutinefunction(entity_extraction.perform_ocr_extraction):

@@ -184,9 +184,8 @@ async def perishable_analyze(
     # Step 4: Combine the results
     try:
         result = {
-            "b64_image" : encoded , 
             "product_name": analysis_result.get("product_name", None),
-            "count": analysis_result.get("item_count", None),
+            "item_count": analysis_result.get("item_count", None),
             "category": analysis_result.get("category", None),
             "estimated_shelf_life_days": analysis_result.get("estimated_shelf_life_days", None),
             "state": predicted_label,             # Classifier model prediction ('fresh' or 'rotten')
