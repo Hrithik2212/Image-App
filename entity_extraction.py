@@ -95,7 +95,7 @@ Analyze the image of a grocery product and extract the following information:
         return None
 
 
-def analyze_freshness(base64_image: str, openai_client: OpenAI) -> Dict:
+async def analyze_freshness(base64_image: str, openai_client: OpenAI) -> Dict:
     prompt = """
 Analyze the image of a grocery product and extract the following information:
 - Name of the product (e.g., apple, banana, bread, etc.)
@@ -142,7 +142,7 @@ If in case the fruit seems spoiled then the estimated shelf life is 0
         return None
 
 
-def perishable_analyze(
+async def perishable_analyze(
     base64_image: str,
     client: Any,
     classifier_model: Any,

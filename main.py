@@ -170,7 +170,9 @@ async def process_detections_with_clients(
         client = await client_queue.get()
         try:
             x, y, w, h = det["bbox"]
-
+            class_id = det['class_id']
+            conf = det['confidence']
+            class_name = det['class_name']
             # Ensure bounding box is within image bounds
             img_width, img_height = pil_image.size
             x = max(0, x)
@@ -199,18 +201,44 @@ async def process_detections_with_clients(
             # Depending on whether perform_ocr_extraction is async or sync, handle accordingly
 
             # If perform_ocr_extraction is asynchronous
-            if asyncio.iscoroutinefunction(entity_extraction.perform_ocr_extraction):
-                analysis = await entity_extraction.perform_ocr_extraction(
-                    base64_image_url=base64_url,
-                    client=client
-                )
+            if class_id == 0:
+            # Call perishable_analyze
+            # Assuming perishable_analyze is synchronous
+                if asyncio.iscoroutinefunction(entity_extraction.perishable_analyze):
+                    analysis = await entity_extraction.perishable_analyze(
+                        base64_image=base64_url,
+                        client=client,
+                        classifier_model=classifier_model,
+                        device=freshness_classifier.device,
+                        threshold=0.9
+                    )
+                else:
+                    # Run perishable_analyze in a separate thread if it's synchronous
+                    analysis = await asyncio.to_thread(
+                        entity_extraction.perishable_analyze,
+                        base64_image=base64_url,
+                        client=client,
+                        classifier_model=classifier_model,
+                        device=freshness_classifier.device,
+                        threshold=0.9
+                    )
+            elif class_id == 1:
+                # Call perform_ocr_extraction
+                if asyncio.iscoroutinefunction(entity_extraction.perform_ocr_extraction):
+                    analysis = await entity_extraction.perform_ocr_extraction(
+                        base64_image_url=base64_url,
+                        client=client
+                    )
+                else:
+                    # Run perform_ocr_extraction in a separate thread if it's synchronous
+                    analysis = await asyncio.to_thread(
+                        entity_extraction.perform_ocr_extraction,
+                        base64_image=base64_url,
+                        openai_client=client
+                    )
             else:
-                # If perform_ocr_extraction is synchronous, run it in a separate thread
-                analysis = await asyncio.to_thread(
-                    entity_extraction.perform_ocr_extraction,
-                    base64_image=base64_url,
-                    openai_client=client
-                )
+                # Handle unexpected class_id values if necessary
+                raise ValueError(f"Unsupported class_id: {class_id}")
 
             print(f"Analysis for {filename}: {analysis}")
 
