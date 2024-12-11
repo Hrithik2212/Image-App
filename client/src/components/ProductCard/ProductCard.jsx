@@ -18,7 +18,7 @@ const ProductCard = ({ product}) =>{
                 <img
                 src={imageSrc}
                 alt="Converted"
-                className="bg-center bg-no-repeat aspect-video bg-cover rounded-lg h-[70px] w-fit"
+                className="bg-center bg-no-repeat aspect-video bg-contain object-contain rounded-lg h-[70px] w-fit"
               />
               )}
               <div className="flex flex-1 flex-col justify-center">

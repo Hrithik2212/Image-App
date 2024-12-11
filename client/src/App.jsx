@@ -9,7 +9,7 @@ function App() {
       path: '/',
       children: [
         {
-          path: '/home',
+          path: '/',
           element: <HomePage />
         },
       ]

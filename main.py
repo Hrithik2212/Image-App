@@ -45,7 +45,8 @@ kolkata_tz = pytz.timezone('Asia/Kolkata')
 ## NOTE : uncomment first three lines and commnet until the first exception block 
 @app.post("/analyze_group/")
 async def analyze_group(b64_image:SingleImage):
-    image_data = base64.b64decode(b64_image.image)
+    header, encoded = b64_image.image.split(",", 1)
+    image_data = base64.b64decode(encoded)
     pil_image = Image.open(io.BytesIO(image_data)).convert('RGB')
 
 # async def analyze_image(images: List[UploadFile] = File(...)):
