@@ -87,6 +87,7 @@ Analyze the image of a grocery product and extract the following information:
 
         # Extract the parsed message
         result = completion.choices[0].message.parsed
+    
 
         return result.model_dump()
 

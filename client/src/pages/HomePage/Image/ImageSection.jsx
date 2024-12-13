@@ -167,8 +167,14 @@ const ImageSection = () => {
               <div className='mx-auto mt-5 w-[25px] h-[25px] border-l-[2px] rounded-[20px] animate-spin  border-t-[2px] border-black'/>
               
             ):(
-              <div className='w-full'>
-                  <h4 className='w-full h-full flex justify-center items-center px-5 py-2 text-[20px] text-center'>Welcome<br></br> to Team Sentinels at Flipkart Grid Hackathon!</h4>
+              <div className='w-full px-10 py-2'>
+                  <h2>Instructions:</h2>
+                    <ul className='w-full px-10 py-2'>
+                        <li>Upload an image containing multiple products.</li>
+                        <li>The system will detect all visible products in the image.</li>
+                        <li>Extract visible information such as brand names from each product.</li>
+                        <li>View the total product count and extracted brand names in the results.</li>
+                    </ul>
               </div>
             )
 

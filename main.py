@@ -16,6 +16,7 @@ import utils
 import entity_extraction
 import freshness_classifier
 from openai import OpenAI
+import mysql.connector
 
 # Initialize FastAPI once
 app = FastAPI()
@@ -38,10 +39,36 @@ classifier_model = freshness_classifier.get_classifier_model()
 obj_det_model = YOLO("ml_models/yolov11m_30k_10ep.pt")  # Ensure correct path and model
 DATA_DIR = "Data"
 
+try:
+    connection = mysql.connector.connect(
+            host=os.getenv("db_host"),  
+            user=os.getenv("db_user"),     
+            password=os.getenv("db_password"),
+            database='flipkart'  
+        )
+    if connection.is_connected():
+            print("Connected to AWS RDS")
+except Exception as e:
+        print(f"Error: {e}")
 
 # Set timezone
 kolkata_tz = pytz.timezone('Asia/Kolkata')
 
+def insert_into_product_analysis(data):
+    keys = [
+        "brand_name", "brand_details", "pack_size", "expiry_date",
+        "mrp", "product_name", "item_count", "category", "estimated_shelf_life_days"
+    ]
+    values = tuple(data.get(key, None) for key in keys)
+    query = """
+    INSERT INTO ProductAnalysis 
+    (brand_name, brand_details, pack_size, expiry_date, mrp, product_name, item_count, category, estimated_shelf_life_days)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    cursor = connection.cursor()
+    cursor.execute(query, values)
+    connection.commit()
+    print("Inserted into ProductAnalysis")
 ## NOTE : uncomment first three lines and commnet until the first exception block 
 @app.post("/analyze_group/")
 async def analyze_group(b64_image:SingleImage):
@@ -113,6 +140,9 @@ async def analyze_group(b64_image:SingleImage):
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
     # Return the list of analysis results as a JSON response
+    print("data",analysis_results)
+    for i in analysis_results:
+        insert_into_product_analysis(i)
     return JSONResponse(content=analysis_results)
 
 
@@ -147,7 +177,9 @@ async def upload_image(data: ImageData):
 #             )
 #         finally:
 #             await file.close()
-    return entity_extraction.ocr_mulitple_images(base64_images , OpenAI(api_key=os.getenv("OPENAI_API_KEY")))
+    data= entity_extraction.ocr_mulitple_images(base64_images , OpenAI(api_key=os.getenv("OPENAI_API_KEY")))
+    insert_into_product_analysis(data)
+    return data
     
 
 

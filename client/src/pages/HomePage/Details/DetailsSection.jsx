@@ -159,8 +159,14 @@ const DetailsSection = () => {
             <div className='mx-auto mt-5 w-[25px] h-[25px] border-l-[2px] rounded-[20px] animate-spin  border-t-[2px] border-black'/>
             
           ):(
-            <div className='w-full'>
-                <h4 className='w-full h-full flex justify-center items-center px-5 py-2 text-[20px] text-center'>Welcome<br></br> to Team Sentinels at Flipkart Grid Hackathon!</h4>
+            <div className='w-full px-10 py-2'>
+            <h2>Instructions:</h2>
+            <ul  className="list-disc">
+                <li>Upload multiple images of the same product from different angles.</li>
+                <li>Each image should contain only one product.</li>
+                <li>The system will extract text information (e.g., labels, specifications).</li>
+                <li>View the consolidated OCR data in the results.</li>
+            </ul>
             </div>
           )
 
