@@ -17,6 +17,9 @@ import entity_extraction
 import freshness_classifier
 from openai import OpenAI
 import mysql.connector
+import re
+from datetime import datetime, timedelta
+
 
 # Initialize FastAPI once
 app = FastAPI()
@@ -69,7 +72,28 @@ def insert_into_product_analysis(data):
     cursor.execute(query, values)
     connection.commit()
     print("Inserted into ProductAnalysis")
+
+
+def parse_date_or_days(input_text):
+    if not input_text:
+        return None
+    if re.match(r"^(0[1-9]|1[0-2])/\d{4}$", input_text):
+        return input_text  
+    match = re.search(r"(\d+)\s*days?", input_text, re.IGNORECASE)
+    if not match:
+        match = re.search(r"^\d+$", input_text)
+    
+    if match:
+        days_to_add = int(match.group(1))
+        current_date = datetime.now()
+        new_date = current_date + timedelta(days=days_to_add)
+        return new_date.strftime("%m/%Y")
+    
+    return None
+
+
 ## NOTE : uncomment first three lines and commnet until the first exception block 
+
 @app.post("/analyze_group/")
 async def analyze_group(b64_image:SingleImage):
     header, encoded = b64_image.image.split(",", 1)
@@ -142,6 +166,8 @@ async def analyze_group(b64_image:SingleImage):
     # Return the list of analysis results as a JSON response
     print("data",analysis_results)
     for i in analysis_results:
+        if "expiry_date" in i:
+            i["expiry_date"]=parse_date_or_days(i["expiry_date"])
         insert_into_product_analysis(i)
     return JSONResponse(content=analysis_results)
 
@@ -178,6 +204,8 @@ async def upload_image(data: ImageData):
 #         finally:
 #             await file.close()
     data= entity_extraction.ocr_mulitple_images(base64_images , OpenAI(api_key=os.getenv("OPENAI_API_KEY")))
+    if "expiry_date" in data:
+            data["expiry_date"]=parse_date_or_days(data["expiry_date"])
     insert_into_product_analysis(data)
     return data
     

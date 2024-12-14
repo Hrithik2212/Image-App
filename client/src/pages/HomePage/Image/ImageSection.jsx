@@ -169,7 +169,7 @@ const ImageSection = () => {
             ):(
               <div className='w-full px-10 py-2'>
                   <h2>Instructions:</h2>
-                    <ul className='w-full px-10 py-2'>
+                    <ul className="list-disc">
                         <li>Upload an image containing multiple products.</li>
                         <li>The system will detect all visible products in the image.</li>
                         <li>Extract visible information such as brand names from each product.</li>
